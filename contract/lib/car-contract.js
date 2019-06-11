@@ -58,7 +58,7 @@ class CarContract extends Contract {
             "owner": owner,
             "currentPrice": parsedPrice,
             "offers": [],
-            "status": 0
+            "status": "Open"
         }
 
         const buffer = Buffer.from(JSON.stringify(listing));
@@ -83,6 +83,7 @@ class CarContract extends Contract {
             throw new Error(`The car ${VIN} does not exist`);
         }
         await ctx.stub.deleteState(VIN);
+        return {"VIN": VIN};
     }
 
     async deleteLease(ctx, leaseID) {
@@ -91,6 +92,7 @@ class CarContract extends Contract {
             throw new Error(`The lease ${leaseID} does not exist`);
         }
         await ctx.stub.deleteState(leaseID);
+        return {"leaseID": leaseID};
     }
 
     async deleteListing(ctx, listingID) {
@@ -99,6 +101,7 @@ class CarContract extends Contract {
             throw new Error(`The listing with listingID "${listingID}" does not exist`);
         }
         await ctx.stub.deleteState(listingID);
+        return {"listingID": listingID};
     }
 
     async refillGas (ctx, VIN, newGasLevel) {
@@ -233,9 +236,13 @@ class CarContract extends Contract {
         const listingExists = this.assetExists(ctx, listingID);
         if(!listingExists) {
             throw new Error(`The listing ${listingID} does not exist`);
-        }  
+        } 
         
         const listing = await this.readAsset(ctx, listingID);
+
+        if(listing.status == "Closed") {
+            throw new Error('The listing is already closed');
+        }
 
         const offer = {
             "renter": renter,
@@ -260,7 +267,7 @@ class CarContract extends Contract {
 
         const listing = await this.readAsset(ctx, listingID);
                 
-        listing.status = 1;
+        listing.status = "Closed";
 
         const lastOffer = listing.offers[listing["offers"].length - 1];
 

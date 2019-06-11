@@ -75,35 +75,35 @@ async function main() {
 
         break;
 
-      // case 'deleteCar':
+      case 'deleteCar':
 
-      //   //Transaction, VIN, Make, Model, User, License Plate, Mileage, Gas Level, current location 
-      //   let returnResponse = await contract.submitTransaction('createCar', "123","Chevy","Tahoe","oliver@test.com","123abc","10000","50","1st St. Garage");
+        //Transaction, VIN
+        let deleteCarResponse = await contract.submitTransaction('deleteCar', "123");
 
-      //   let response = JSON.parse(returnResponse.toString());
+        let deletedCar = JSON.parse(deleteCarResponse.toString());
 
-      //   console.log(response);
-      //   break;
+        console.log("Car with VIN : "+deletedCar.VIN+" was deleted");
+        break;
 
-      // case 'deleteLease':
+      case 'deleteLease':
 
-      //   //Transaction, VIN, Make, Model, User, License Plate, Mileage, Gas Level, current location 
-      //   let returnResponse = await contract.submitTransaction('createCar', "123","Chevy","Tahoe","oliver@test.com","123abc","10000","50","1st St. Garage");
+        //Transaction, leaseID
+        let deleteLeaseResponse = await contract.submitTransaction('deleteLease', "Le-001");
 
-      //   let response = JSON.parse(returnResponse.toString());
+        let deletedLease = JSON.parse(deleteLeaseResponse.toString());
 
-      //   console.log(response);
-      //   break;
+        console.log("Lease with leaseID : "+deletedLease.leaseID+" was deleted");
+        break;
 
-      // case 'deleteListing':
+      case 'deleteListing':
 
-      //   //Transaction, VIN, Make, Model, User, License Plate, Mileage, Gas Level, current location 
-      //   let returnResponse = await contract.submitTransaction('createCar', "123","Chevy","Tahoe","oliver@test.com","123abc","10000","50","1st St. Garage");
+        //Transaction, listingID
+        let deleteListingResponse = await contract.submitTransaction('deleteListing', "Li-001");
 
-      //   let response = JSON.parse(returnResponse.toString());
+        let deletedListing = JSON.parse(deleteListingResponse.toString());
 
-      //   console.log(response);
-      //   break;
+        console.log("Listing with listingID : "+deletedListing.listingID+" was deleted");
+        break;
 
       case 'refillGas':
 
@@ -118,51 +118,52 @@ async function main() {
       case 'rentCar':
 
         //Transaction, VIN, leaseID, renter, price, timeRented, restrictions
-        let returnResponse = await contract.submitTransaction('rentCar', "123","Le-001","oliver@test.com","15","10:00","Less than 100mi");
+        let newLeaseResponse = await contract.submitTransaction('rentCar', "123","Le-001","oliver@test.com","15","10:00","Less than 100mi");
 
-        let response = JSON.parse(returnResponse.toString());
+        let newLease = JSON.parse(newLeaseResponse.toString());
 
-        console.log(response);
+        console.log(newLease);
         break;
 
       case 'updateLocation':
 
-        //Transaction, VIN, Make, Model, User, License Plate, Mileage, Gas Level, current location 
-        let returnResponse = await contract.submitTransaction('createCar', "123","Chevy","Tahoe","oliver@test.com","123abc","10000","50","1st St. Garage");
+        //Transaction, VIN, newLocation, gasLevel
+        let updateLocationResponse = await contract.submitTransaction('updateLocation', "123","4th Ave.","40");
 
-        let response = JSON.parse(returnResponse.toString());
+        let newCarLocation = JSON.parse(updateLocationResponse.toString());
 
-        console.log(response);
+        console.log(newCarLocation);
         break;
 
       case 'returnCar':
 
-        //Transaction, VIN, Make, Model, User, License Plate, Mileage, Gas Level, current location 
-        let returnResponse = await contract.submitTransaction('createCar', "123","Chevy","Tahoe","oliver@test.com","123abc","10000","50","1st St. Garage");
+          //Transaction, leaseID, timeReturned
+          let returnCarResponse = await contract.submitTransaction('returnCar', "Le-001","12:00");
 
-        let response = JSON.parse(returnResponse.toString());
+          let returnedCar = JSON.parse(returnCarResponse.toString());
 
-        console.log(response);
+          console.log(returnedCar);
+
         break;
 
       case 'makeOffer':
 
-        //Transaction, VIN, Make, Model, User, License Plate, Mileage, Gas Level, current location 
-        let returnResponse = await contract.submitTransaction('createCar', "123","Chevy","Tahoe","oliver@test.com","123abc","10000","50","1st St. Garage");
+        //Transaction, listingID, renter, price
+        let makeOfferResponse = await contract.submitTransaction('makeOffer', "Li-001","oliver@test.com","18");
 
-        let response = JSON.parse(returnResponse.toString());
+        let newOffer = JSON.parse(makeOfferResponse.toString());
 
-        console.log(response);
+        console.log(newOffer);
         break;
 
       case 'acceptOffer':
 
-        //Transaction, VIN, Make, Model, User, License Plate, Mileage, Gas Level, current location 
-        let returnResponse = await contract.submitTransaction('createCar', "123","Chevy","Tahoe","oliver@test.com","123abc","10000","50","1st St. Garage");
+        //Transaction, listingID, leaseID, timeRented, restrictions
+        let acceptOfferResponse = await contract.submitTransaction('acceptOffer', "Li-001","Le-001","10:00","Less than 50mi");
 
-        let response = JSON.parse(returnResponse.toString());
+        let acceptedOfferLease = JSON.parse(acceptOfferResponse.toString());
 
-        console.log(response);
+        console.log(acceptedOfferLease);
         break;
 
       case 'queryAll':
@@ -171,13 +172,14 @@ async function main() {
 
       case 'queryByField':
 
-        //Transaction, VIN, Make, Model, User, License Plate, Mileage, Gas Level, current location 
-        let returnResponse = await contract.submitTransaction('createCar', "123","Chevy","Tahoe","oliver@test.com","123abc","10000","50","1st St. Garage");
+          let queryByFieldResults = await contract.evaluateTransaction('queryByField', 'docType', 'Car');
+    
+          let queryByFieldArray = JSON.parse(queryByFieldResults.toString());
 
-        let response = JSON.parse(returnResponse.toString());
-
-        console.log(response);
-        break;
+          console.log(queryByFieldArray);
+          
+          break;
+      
       default:
         throw new Error(`Must include an argument with the name of the transaction you wish to invoke`);
     }

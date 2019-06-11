@@ -27,128 +27,16 @@ After completing this lab you will understand how to:
 9. Lastly the car is returned and made available for the next renter.
 
 # Prerequisites
-- an IBM Cloud account
 - VSCode
 - The IBM Blockchain Platform extension for VSCode 
 
-# Creating the Node-Red simulated device application
-To start off, we are going to create the simulated IoT device which will invoke the updateAssetLocation with the location where the device was "scanned". We will be using the IBM Watson IoT Platform to facilitate the communicaton from our virtual device to a local IoT service which will be listening for published device events. 
-
-For the code used to build this virtual device, we will be using a framework called Node-Red which is a low code environment which allows for drag and drop of preconfigured nodes to easily build applications. 
-
-IBM Cloud has a starter kit for IoT applications that comes with a Node-Red application and an instance of the IBM Watson IoT Platform service already bound to it. 
-
-1. Go to [IBM Cloud](https://cloud.ibm.com) and log in if you haven't already
-2. Click on **Catalog** at the top right of the page
-3. From the catalog, select **Starter Kits** from the category list on the left side to narrow the services shown.
-4. Then, find and click on the **Internet of Things Platform Starter** kit.
-
-![iotpStarter](./images/iotpStarter.png)
-
-5. On the next page, give the new application a name. It's important that the name be unique so that there are no hostname conflicts with other applications out there. To make it easy, you can add your initials before the hostname (e.g. My name is Oliver Rodriguez so I might name my application or-asset-tracking).
-
-![servicePage](./images/servicePage.png)
-
-6. Click create. This creation process will take a bit.
-
-7. Once the application is deployed, click on **Visit App URL** at the top of the page to go to the application.
-
-![appUrl](./images/appUrl.png)
-
-8. The first time you open a Node-Red application you have to go through the initial set up wizard. To start, create an admin username and password. You can also select the checkbox to give read access to anybody that visit's your app.
-
-9. When done with the wizard you should be taken to the application. Click on the red button that says **Go to your Node-RED flow editor**. The page that you are brought to is called the **Canvas** which is where you drag and drop your nodes. The left pane that holds all the nodes is called the **palette**.
-
-10. To make any changes you will need to log in with the admin account created during set up. Click on the sillouette at the top right of the page and click **log in**. Then, enter your username and password to log in.
-
-![logIn](./images/login.png)
-
- You may notice that this application already comes with some starter code, go ahead and select it all with your curser by clicking and draging and then press your delete key.
-
-10. We will be importing some of our own code for the virtual device. To do this, click on the menu button at the top right, select **Import** and **Clipboard**. 
-
-![import](./images/import.png)
-
-Then paste in the contents of the [**flow.json**](./flow.json) file from this repo and click **Import**.
-
-![flow](./images/flow.png)
-
-Now that we have our flow imported, we now need to use the IBM Watson IoT Platform to facilitate communication between the virtual device and the local IoT application.
-
-
-# Connect with the IBM Watson IoT Platform
-
-1. From the dashboard of IBM Cloud, click on the IBM Watson IoT Platform service. You may need to expand the *Cloud Foundry services* section.
-2. On the overview page for the service, click on **Launch**
-
-![launch](./images/launch.png)
-
-3. Once in the IoT Platform, click on the **Devices** button from the left navigation panel.
-
-![devices](./images/devices.png)
-
-## Create a new Device Type
-
-4. Once in the devices page, click on **Add Device** at the top right of the page.
-5. Click on the **Device Type** tab at the top left of the page.
-6. Once on the new page, click on **Add Device Type** at the top right.
-7. Then, ensure **Type** is **Device** and enter **asset** as the **Name**
-
-![newType](./images/newType.png)
-
-8. Click **Next** and click **Done** on the next page.
-
-
-## Register a new device
-
-9. On the new page, click on **Register Devices**
-
-![registerDevices](./images/registerDevices.png)
-
-10. Next, ensure that **asset** is selected as the **Device Type** and enter **A-001** as the **DeviceID**
-11. Click **Next**, and then **Next** again on the device defaults page, and then **Next** again on the token generation page.
-12. Click **Done** to complete device registration
-13. Once you complete registration, you will be taken to the **Device credentials** page. Copy everything in the **Device credentials** object and save it in a seperate doc.
-
- It's important to copy the Authentication Token as you will not be able to retrieve it once you leave the page. 
-
-![deviceCreds](./images/deviceCreds.png)
-
-
-## Register an App
-Now we need to register an application with the platform to generate an API key
-
-1. Click on the **Apps** button on the left navigation panel
-
-![apps](./images/apps.png)
-
-2. On the Apps, page, click on **Generate API Key** at the top right of the page.
-
-3. Add a description if you wish, then click on **Next**
-
-4. On the new page, select **Standard Application** as the **Role**
-
-![role](./images/role.png)
-
-5. Click **Generate Key**
-
-6. Once the API Key has been added, copy both the **API Key** and the **Authentication Token** to a seperate doc.
-
-Again, just like with the device credentials, you cannot retrieve the token once you leave the page. Be sure to have it copied somewhere.
-
-7. Next, take a look at the address bar of your IBM Watson IoT platform page and copy the part of the address that comes before *.internetofthings.ibmcloud.com*. It should be 6 characters. These character represent your IoT org. Copy them into a text document for later.
-
-![IoT Org](./images/org.png)
-
-Now that we have our device registered and the credentials saved, let's return to our code editor.
 
 # Starting the local Hyperledger Fabric network
 Before we go any further, we need to start our local blockchain network. Luckily for us, there is a plug in for VSCode called the IBM Blockchain Platform extension that allows us to get a network up and running with the push of a button. 
 
-1. Open up Visual Studio Code
-2. If you don't already have it, install the IBM Blockchain Platform extension in VSCode using the instructions found [here](https://github.com/IBM-Blockchain/blockchain-vscode-extension)
-
-2. Once the extension is installed, click on the IBM Blockchain Platform icon on the left toolbar of VSCode.
+1. Log into the VM that was provided to you by typing in the address in the address bar of the browser and logging in with the password provided.
+2. Open the terminal within the VM and enter the word `code` and press enter. This is a shortcut tht will open up VS Code, the code editor that we will be using.
+3. From VS Code, click on the IBM Blockchain Platform extension on the left side of the editor. The icon looks like a square as shown below.
 
 ![IBP icon](./images/ibp_icon.png)
 
@@ -160,16 +48,30 @@ Your local network will then be spun up in docker containers on your machine. We
 
 
 # Creating the Logspout Container
-Throughout this workshop we may need to see what the output of certain actions against the Hyperledger Fabric network are. To see this output we will be implementing a special container called the logspout container. This container will monitor all log output from all containers in a certain docker network. In this case, we can see what each container in our Hyperledger Fabric network is saying which will help with debuging.
+Throughout this workshop we may need to see the output of certain actions against the Hyperledger Fabric network. To see this output we will be implementing a special container called the logspout container. This container will monitor all log output from all containers in a certain docker network. In this case, we can see what each container in our Hyperledger Fabric network is saying which will help with debuging.
 
-1. Navigate to this repo in your terminal/command prompt
-2. Find and run **org1/configuration/cli/monitordocker.sh**
-3. Keep this terminal window open
+1. Clone this repo by navigating to the terminal and entering the following commands:
+```bash
+cd /home/student/Documents/
+
+git clone https://github.com/odrodrig/carLeasing.git
+
+```
+
+2. Then run the following commands to create the logspout container
+
+```bash
+
+cd carLeasing/configuration/cli/
+
+bash monitordocker.sh
+```
+3. Keep this terminal window open as we will be checking back to see output throughout the lab
 
 # Packaging chaincode
 In order to start using the chaincode we need to package, install, and instantiate it first. 
 
-1. To package the chaincode, first go to the file explorer in Visual Studio Code.
+1. To package the chaincode, first go to the file explorer in Visual Studio Code by clicking on the file icon on the left toolbar.
 2. Then, right click in the empty space below the project files and select **Add Folder to Workspace**
 
 ![addToWorkspace](./images/addToWorkspace.png)

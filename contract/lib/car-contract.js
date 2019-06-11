@@ -212,7 +212,8 @@ class CarContract extends Contract {
         const milesDriven = car.mileage - lease.mileageBefore;
 
         if (gasAfter < lease.gasAmountBefore) {
-            throw new Error("The amount of gas in the car on return should be equal to or greater then when the car was rented");
+            console.log("Gas level upon return is less than when leased. A $50 charge has been applied to the overall price");
+            lease.price += 50;
         }
 
         lease.gasAfter = gasAfter;
@@ -249,7 +250,6 @@ class CarContract extends Contract {
             "price": parseFloat(price)
         }
 
-        listing.currentPrice = offer.price;
         listing.offers.push(offer);
 
         const listingBuffer = Buffer.from(JSON.stringify(listing));
@@ -267,15 +267,15 @@ class CarContract extends Contract {
 
         const listing = await this.readAsset(ctx, listingID);
                 
-        listing.status = "Closed";
-
         const lastOffer = listing.offers[listing["offers"].length - 1];
+
+        listing.currentPrice = lastOffer.price;
+        listing.status = "Closed";
 
         await this.rentCar(ctx, listing.VIN, leaseID, lastOffer.renter, lastOffer.price, timeRented, restrictions);
 
         const listingBuffer = Buffer.from(JSON.stringify(listing));
 
-        console.log("just before put listing");
         await ctx.stub.putState(listingID, listingBuffer);
         return listing;
     }

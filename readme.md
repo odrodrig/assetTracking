@@ -165,173 +165,104 @@ In the **application** folder you will find **invoke.js**. This file contains th
 
 This script takes the name of a transaction as an argument and then a switch/case statement determines which transaction to invoke.
 
-2. 
+Take a look at the first case in the switch/case statement. This case will be evaluated when the argument passed in equals "createCar".
 
+3. Open a new terminal window and enter the following command to navigate to the application directory:
 
+```bash
+cd /home/student/Documents/carLeasing/application/
+```
 
+4. Then install the application dependencies by running the following command:
+
+```bash
+npm install
+```
+
+5. Invoke the creatCar transaction by running the following command:
+
+```bash
+node invoke.js createCar
+```
+
+The transaction should complete sucessfully. Take a look at the logspout container to see the output of that transaction.
+
+6. The next step is to create a listing but if you go back to the code editor and take a look at the second case for createListing, you will notice that it is incomplete. 
+
+7. First, reference the structure of the submitTransaction method for the createCar case. Next, take note of the parameters that the createListing requires. You can see this by switching to the /lib/car-contract.js file in this repo and finding the createListing transaction.
+
+8. Complete the rest of the submitTransaction invocation for createListing by filling in the correct parameters as called for in the car-contract file for a listing with the following properties:
+
+- listingID: L-001
+- VIN: 123
+- owner: john@test.com
+- price: 15
+
+When done, your submitTransaction invocation should look like the line below:
+
+```
+let createListingResponse = await contract.submitTransaction('createListing', "Li-001","123","john@test.com","15");
+```
 
 4. Save the file
 5. Run **invoke.js** with the following command
 
 ```
-node invoke.js
+node invoke.js createListing
 ```
 
-We will be following the same transaction order from the previous section on invoking transactions with the VSCode extension.
+6. Take a look at the output of the createListing transaction in the logspout container. You should see the newly created listing.
 
-Using the 5 steps outlined above, invoke a few of the following transactions if you would like to see the SDK in action.
-
-1. Manufacture Asset
-2. Transfer Asset
-3. Create Lease
-4. Transfer Asset again
-5. Return Asset
-6. Inspet Asset
-7. Repair Asset
-8. Return Deposit
-
-
-## Manufacture Asset
-The manufactureAsset transaction creates a new digital asset to be stored on the ledger. Once the transaction is successful, the new asset is returned.
-
-
-```javascript
-
-    const manufactureResponse = await contract.submitTransaction('manufactureAsset', 'manufacturer1','A-005', 'asset');
-    let asset = Asset.fromBuffer(manufactureResponse);
-
-    console.log(asset);
-    
+7. Invoke the following transactions by following the same pattern of:
+```bash
+node invoke.js "transaction name"
 ```
 
-## Transfer Asset
-The transferAsset transaction transfers ownership of the asset within the ledger. Returns the transferred asset
-
-```javascript
-
-   const transferResponse = await contract.submitTransaction('transferAsset', "manufacturer1","A-005","manufacturer1","vendor1");
-   let asset = Asset.fromBuffer(transferResponse);
-
-   console.log(asset);
-    
-```
-
-## Create Lease
-The createLease transaction creates a lease which defines the lessee, lessor, and other lease terms. Returns the created lease.
-
-```javascript
-
-   const createLeaseResponse = await contract.submitTransaction('createLease', "L-004","contractor1","vendor1","A-005","manufacturer1","lease","Jan2019","Jan2021","1000.00","1000.00");
-   let assetLease = AssetLease.fromBuffer(createLeaseResponse);
-
-   console.log(assetLease);
-    
-```
-
-## Transfer Asset again
-The transferAsset transaction transfers ownership of the asset within the ledger. Returns the transferred asset
-
-```javascript
-
-   const transferResponse = await contract.submitTransaction('transferAsset', "manufacturer1","A-005","vendor1","contractor1");
-   let asset = Asset.fromBuffer(transferResponse);
-
-   console.log(asset);
-```
-
-## Return Asset
-The returnAsset transaction is invoked when a lessee wants to return the leased asset at the end of the lease. Returns the returned asset and the lease that has ended.
-
-```javascript
-
-   const returnResponse = await contract.submitTransaction('returnAsset', "manufacturer1","A-005","contractor1","vendor1","L-004","Jan2021");
-   
-   let response = JSON.parse(returnResponse.toString());
-
-   let asset = response.asset;
-   let assetLease = response.assetLease;
-
-   console.log(asset);
-   console.log("");
-   console.log(assetLease);
-    
-```
-
-## Inspect Asset
-The inspectAsset transaction is invoked when the asset has been received and inspected by the vendor. This transaction records the percent of damage to the asset on the lease. Returns the inspected asset and lease.
-
-```javascript
-
-   const inspecteResponse = await contract.submitTransaction('inspectAsset', "manufacturer1","A-005","vendor1","L-004","21");
-
-   let response = JSON.parse(inspecteResponse.toString());
-
-   let asset = response.asset;
-   let assetLease = response.assetLease;
-
-   console.log(asset);
-   console.log("");
-   console.log(assetLease);
-    
-```
-
-## Repair Asset
-The repairAsset transaction is called after the asset has been repaired. Sets the asset condition to **Refurbished** and the state to **Available**. Returns the repaired asset.
-
-```javascript
-
-   const repairResponse = await contract.submitTransaction('repairAsset', 'manufacturer1','A-005');
-   let asset = Asset.fromBuffer(repairResponse);
-
-   console.log(asset);
-    
-```
-
-## Return Deposit
-The returnDepost transaction records the amount of the depost to be returned to the lessee. This is calculated by looking at the percent of the asset damaged which was recorded in the lease by the inspectAsset transaction and then multiplying the original deposit paid by a percent which corolates with the amount of damage. (e.g. >20% damage to the asset = 80% of the original deposit returned). Returns the lease.
-
-```javascript
-
-   const returnDepositResponse = await contract.submitTransaction('returnDeposit', 'vendor1','L-004');
-   let assetLease = AssetLease.fromBuffer(returnDepositResponse);
-
-   console.log(assetLease);
-    
-```
-
-
+- makeOffer
+- acceptOFfer
+- updateLocation
+- refillGas
+- returnCar
 
 # Query the World State
-To query the world state database there are two files that we can use to help us out: queryByField.js and queryAll.js.
+To query the world state database there are two transactions that we can use to help us out: queryByField and queryAll.
 
-**queryByField.js** does just what it says. It queries the world state and only returns assets that match the values for a field such as "currentOwner", "assetType", or "currentOwner". For example, we can use this file to get all assets that are owned by vendor1.
+**queryByField** does just what it says. It queries the world state and only returns assets that match the values for a field such as "docType", "owner", or "VIN". For example, we can use this file to get all assets of docType "Car" or the car with VIN "123".
 
 **queryAll** also does what it says. It returns everything in the world state.
 
-1. In a terminal window navigate to the **application** folder
-1. Run queryByField.js with this command
+**Note**: This query capability is only available on networks implementing CouchDB as the world state database.
 
-```
-node queryByField.js
-```
+Take a look at **invoke.js** in the code editor again and go down to the case for "queryAll"
 
-By default, it will return all assets with **assetType** that equals **"asset"** which means it will not return leases.
+Notice how instead of "submitTransaction()" we are calling "evaluateTransaction". The difference between the two is that when you submit a transaction it goes through the endorsement, ordering, and comitting process to be added to the ledger. This is the method that you will be calling for most transaction invocations.
 
-2. Now run queryAll.js with this command
+When you evaluate a transaction, you simulate the transaction and get the proposed response but the transaction is not committed to the ledger and does not write to the world state database. This method is used for query operations.
 
-```
-node queryAll.js
+8. Run the following command to query everything in the ledger:
+```bash
+node invoke.js queryAll
 ```
 
-This will return everything in the ledger.
+Take a look at the contents of the world state in the logspout container. As mentioned before, this view gives us absolutely everything in the ledger. But what if we only want to see the car assets?
 
+9. To see only the car assets we will be calling the queryByField transaction. Take a look at the evaluateTransaction line in invoke.js for queryByField. The first argument that we pass in to the transaction is the field that we want to filter on and the second argument is the specific value that we are looking for.
+
+10. Run the following command to query for car assets:
+
+```
+node invoke.js queryByField
+```
+
+Take a look at the car asset that was returned in the logspout container.
+
+**Optionally**: Change up the values in the invoke.js file to create additional cars and run through different scenarios. 
 
 # Recap
 In this lab we did a lot. First we created a virtual device with Node-Red and then configured the IBM Watson IoT Platform and received API credentials. Next we created the logspout container to monitor logs from our Hyperledger Fabric network. After that, we packaged, installed, and instantiated a smart contract on our local Hyperledger Fabric network. This allowed us to test out some of our transactions using the VSCode plugin. Once we were done testing out the transactions we decided to import some identities and start invoking transactions with the Node SDK. Then, we started the local IoT app to start listening for scan events which we then began to send from our Node-Red app. Finally, we queried the world state database using two different query programs.
 
-<!-- keep this -->
 ## License
 
-This code pattern is licensed under the Apache License, Version 2. Separate third-party code objects invoked within this code pattern are licensed by their respective providers pursuant to their own separate licenses. Contributions are subject to the [Developer Certificate of Origin, Version 1.1](https://developercertificate.org/) and the [Apache License, Version 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
+This code is licensed under the Apache License, Version 2. Separate third-party code objects invoked within this code pattern are licensed by their respective providers pursuant to their own separate licenses. Contributions are subject to the [Developer Certificate of Origin, Version 1.1](https://developercertificate.org/) and the [Apache License, Version 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
 
 [Apache License FAQ](https://www.apache.org/foundation/license-faq.html#WhatDoesItMEAN)

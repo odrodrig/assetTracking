@@ -6,8 +6,8 @@ SPDX-License-Identifier: Apache-2.0
  * This application has 6 basic steps:
  * 1. Select an identity from a wallet
  * 2. Connect to network gateway
- * 3. Access PaperNet network
- * 4. Construct request to issue commercial paper
+ * 3. Access car-leasing network
+ * 4. Determine the transaction that was passed in
  * 5. Submit transaction
  * 6. Process response
  */
@@ -66,8 +66,8 @@ async function main() {
 
       case 'createListing':
 
-        //Transaction, listingID, VIN, owner, price
-        let createListingResponse = await contract.submitTransaction('createListing', "Li-001","123","john@test.com","15");
+        //Add the correct parameters below. Reference ../lib/car-contract.js to see what parameters are required
+        let createListingResponse = await contract.submitTransaction('createListing', /* Insert arguments here */);
 
         let newListing = JSON.parse(createListingResponse.toString());
 

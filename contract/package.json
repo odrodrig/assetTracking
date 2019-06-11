@@ -1,6 +1,6 @@
 {
     "name": "car-leasing",
-    "version": "0.0.22",
+    "version": "0.0.1",
     "description": "A smart contract for a car leasing business network",
     "main": "index.js",
     "engines": {

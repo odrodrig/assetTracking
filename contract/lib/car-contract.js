@@ -5,11 +5,6 @@
 'use strict';
 
 const { Contract } = require('fabric-contract-api');
-const Car = require('../models/car.js');
-const Lease = require('../models/lease.js');
-const User = require('../models/user.js');
-const Company = require('../models/company.js');
-const Listing = require('../models/listing.js');
 
 class CarContract extends Contract {
 
@@ -27,40 +22,26 @@ class CarContract extends Contract {
         const parsedMileage = Number(mileage);
         const parsedGasLevel = Number(gasLevel);
 
-        const car = new Car(VIN, make, model, owner, licensePlate, parsedMileage, parsedGasLevel, currentLocation);
+        const car = {
+            VIN: VIN,
+            docType: "Car",
+            make: make,
+            model: model,
+            owner: owner,
+            licensePlate: licensePlate,
+            mileage: parsedMileage,
+            gasLevel: parsedGasLevel,
+            currentLocation: currentLocation,
+            currentRenter: null,
+            currentStatus: "Available"
+        }
+
         const buffer = Buffer.from(JSON.stringify(car));
         await ctx.stub.putState(VIN, buffer);
-    }
+        return car;
+    }    
 
-    async createUser(ctx, email, firstName, lastName, phone, driversLicense) {
-
-        const exists = await this.assetExists(ctx, email);
-        if (exists) {
-            throw new Error(`A user with the eamil "${email}" already exists`);
-        }
-
-        const user = new User(email, firstName, lastName, phone, driversLicense);
-
-        const buffer = Buffer.from(JSON.stringify(user));
-
-        await ctx.stub.putState(email, buffer);
-    }
-
-    async createCompany(ctx, companyID, companyName, phone) {
-
-        const exists = await this.assetExists(ctx, companyID);
-        if (exists) {
-            throw new Error(`A company with companyID "${companyID}" already exists`);
-        }
-
-        const company = new Company(companyID, companyName, phone);
-
-        const buffer = Buffer.from(JSON.stringify(company));
-
-        await ctx.stub.putState(email, buffer);
-    }
-
-    async createListing(ctx, listingID, VIN, ownerEmail, price) {
+    async createListing(ctx, listingID, VIN, owner, price) {
 
         const exists = await this.assetExists(ctx, listingID);
 
@@ -70,10 +51,20 @@ class CarContract extends Contract {
 
         const parsedPrice = parseFloat(price);
 
-        const listing = new Listing(listingID, VIN, ownerEmail, parsedPrice);
+        const listing = {
+            "listingID": listingID,
+            "docType": "Listing",
+            "VIN": VIN,
+            "owner": owner,
+            "currentPrice": parsedPrice,
+            "offers": [],
+            "status": 0
+        }
+
         const buffer = Buffer.from(JSON.stringify(listing));
 
         await ctx.stub.putState(listingID, buffer);
+        return listing;
     }
 
     async readAsset(ctx, ID) {
@@ -102,22 +93,6 @@ class CarContract extends Contract {
         await ctx.stub.deleteState(leaseID);
     }
 
-    async deleteUser(ctx, email) {
-        const exists = await this.assetExists(ctx, email);
-        if (!exists) {
-            throw new Error(`The User with email "${email}" does not exist`);
-        }
-        await ctx.stub.deleteState(email);
-    }
-
-    async deleteCompany(ctx, companyID) {
-        const exists = await this.assetExists(ctx, companyID);
-        if (!exists) {
-            throw new Error(`The company with companyID "${companyID}" does not exist`);
-        }
-        await ctx.stub.deleteState(companyID);
-    }
-
     async deleteListing(ctx, listingID) {
         const exists = await this.assetExists(ctx, listingID);
         if (!exists) {
@@ -133,69 +108,63 @@ class CarContract extends Contract {
             throw new Error(`The car ${VIN} does not exist`);
         }
 
-        const carJSON = await this.readAsset(ctx, VIN);
-        const car = new Car(carJSON);
+        const car = await this.readAsset(ctx, VIN);
 
         const parsedGasLevel = Number(newGasLevel);
 
-        car.setGasLevel(parsedGasLevel)
-        .then(() => {
+        car.gasLevel = parsedGasLevel;
 
-            const buffer = Buffer.from(JSON.stringify(car));
-            ctx.stub.putState(buffer);
+        const buffer = Buffer.from(JSON.stringify(car));
+        await ctx.stub.putState(car.VIN, buffer);
 
-        })
-        .catch((e) => {
-            console.log(e);
-            throw new Error(`The car ${VIN} could not be updated`);
-        });
-
+        return car;
     }
 
     async rentCar(ctx, VIN, leaseID, renter, price, timeRented, restrictions) {
-
-        console.log("in rent");
 
         const exists = await this.assetExists(ctx, VIN);
         if (!exists) {
             throw new Error(`The car ${VIN} does not exist`);
         }
 
-        const carJSON = await this.readAsset(ctx, VIN);
-        const car = new Car(carJSON); 
+        const car = await this.readAsset(ctx, VIN);
 
-        console.log(car);
-
-        console.log("got car");
-
-        if (!car.currentStatus == 0) {
+        if (!car.currentStatus == "Available") {
             throw new Error(`The car ${VIN} is not available to rent`);
         }
 
-        const exists = await this.assetExists(ctx, leaseID);
+        const leaseExists = await this.assetExists(ctx, leaseID);
 
-        if (exists) {
+        if (leaseExists) {
             throw new Error(`The lease ${leaseID} already exists`);
         }
 
         const parsedPrice = parseFloat(price);
 
-        console.log("before creating lease");
+        const lease = {
+            "id": leaseID,
+            "docType": "Lease",
+            "VIN": VIN,
+            "renter": renter,
+            "owner": car.owner,
+            "price": parsedPrice,
+            "mileageBefore": car.mileage,
+            "timeRented": timeRented,
+            "gasAmountBefore": car.gasLevel,
+            "restrictions": restrictions    
+        }
 
-        const lease = new Lease(leaseID, car, renter, car.owner, parsedPrice, car.mileage, timeRented, car.gasLevel, restrictions);
-
-        car.setInUse();
-
-        console.log("before buffers");
+        car.currentRenter = renter;
+        car.currentStatus = "In Use";
 
         const leaseBuffer = Buffer.from(JSON.stringify(lease));
         const carBuffer = Buffer.from(JSON.stringify(car));
 
 
-        console.log("before lease put");
         await ctx.stub.putState(leaseID, leaseBuffer); 
-        console.log("before car put");
         await ctx.stub.putState(VIN, carBuffer);
+
+        return lease;
     }
 
     async updateLocation(ctx, VIN, newLocation, gasLevel) {
@@ -204,32 +173,37 @@ class CarContract extends Contract {
             throw new Error(`The car ${VIN} does not exist`);
         }
 
-        const carJSON = await this.readAsset(ctx, VIN);
-        const car = new Car(carJSON);
+        const car = await this.readAsset(ctx, VIN);
 
         const newGasLevel = Number(gasLevel);
 
         car.currentLocation = newLocation;
         car.gasLevel = newGasLevel;
+        car.mileage+=5;
 
         const carBuffer = Buffer.from(JSON.stringify(car));
         
         await ctx.stub.putState(VIN, carBuffer);
+
+        return car;
     }
 
     async returnCar(ctx, leaseID, timeReturned) {
-        const exists = await this.assetExists(ctx, VIN);
+        const exists = await this.assetExists(ctx, leaseID);
         if (!exists) {
-            throw new Error(`The car ${VIN} does not exist`);
+            throw new Error(`The lease with ID ${leaseID} does not exist`);
         }
 
-        const leaseJSON= await this.readAsset(ctx, leaseID);
-        const lease = new Lease(leaseJSON);
+        const lease = await this.readAsset(ctx, leaseID);
 
         const VIN = lease.VIN;
 
-        const carJSON = await this.readAsset(ctx, VIN);
-        const car = new Car(carJSON);
+        const carExists = await this.assetExists(ctx, VIN);
+        if (!carExists) {
+            throw new Error(`The car with VIN ${VIN} does not exist`);
+        }
+
+        const car = await this.readAsset(ctx, VIN);
 
         const gasAfter = car.gasLevel;
         const milesDriven = car.mileage - lease.mileageBefore;
@@ -238,20 +212,20 @@ class CarContract extends Contract {
             throw new Error("The amount of gas in the car on return should be equal to or greater then when the car was rented");
         }
 
-        lease.setGasAfter(gasAfter);
-        lease.setMilesDriven(milesDriven);
-        lease.setTimeReturned(timeReturned);
+        lease.gasAfter = gasAfter;
+        lease.milesDriven = milesDriven;
+        lease.timeReturned = timeReturned;
 
-        car.setMileage(milesDriven);
-        car.setCurrentRenter(null);
-        car.setAvailable();
+        car.currentRenter = null;
+        car.currentStatus = "Available";
 
         const carBuffer = Buffer.from(JSON.stringify(car));
         const leaseBuffer = Buffer.from(JSON.stringify(lease));
 
         await ctx.stub.putState(car.VIN, carBuffer);
-        await ctx.stub.putState(lease.leaseID, leaseBuffer);
+        await ctx.stub.putState(leaseID, leaseBuffer);
 
+        return lease;
     }
 
     async makeOffer(ctx, listingID, renter, price) {
@@ -261,20 +235,20 @@ class CarContract extends Contract {
             throw new Error(`The listing ${listingID} does not exist`);
         }  
         
-        const listingJSON = await this.readAsset(ctx, listingID);
-        const listing = new Listing(listingJSON);
+        const listing = await this.readAsset(ctx, listingID);
 
         const offer = {
             "renter": renter,
             "price": parseFloat(price)
         }
 
-        listing.setCurrentPrice(offer.price);
-        listing.addOffer(offer);
+        listing.currentPrice = offer.price;
+        listing.offers.push(offer);
 
         const listingBuffer = Buffer.from(JSON.stringify(listing));
 
         await ctx.stub.putState(listingID, listingBuffer);
+        return listing;
     }
 
     async acceptOffer(ctx, listingID, leaseID, timeRented, restrictions) {
@@ -284,31 +258,19 @@ class CarContract extends Contract {
             throw new Error(`The listing ${listingID} does not exist`);
         }
 
-        console.log("before listing json");
-        const listingJSON = await this.readAsset(ctx, listingID);
-        const listing = new Listing(listingJSON);
-        console.log(listing);
+        const listing = await this.readAsset(ctx, listingID);
+                
+        listing.status = 1;
 
-        console.log("before carjson");
-        console.log(listing.VIN);
-        
-        const carJSON = await this.readAsset(ctx, listing.VIN);
-        console.log(carJSON);
-        console.log("after carjson");
-        
-        const car = new Car(carJSON);
+        const lastOffer = listing.offers[listing["offers"].length - 1];
 
-        listing.setClosed();
-
-        const lastOffer = Listing.getLastOffer();
-
-        console.log("just before rent");
-        await this.rentCar(ctx, listing.VIN, leaseID, lastOffer.renter, lastOffer.price, timeRented, car.gasLevel, restrictions);
+        await this.rentCar(ctx, listing.VIN, leaseID, lastOffer.renter, lastOffer.price, timeRented, restrictions);
 
         const listingBuffer = Buffer.from(JSON.stringify(listing));
 
         console.log("just before put listing");
         await ctx.stub.putState(listingID, listingBuffer);
+        return listing;
     }
 
     // Query All assets in the ledger

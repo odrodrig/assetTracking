@@ -1,62 +1,30 @@
-# Asset Tracking with Blockchain and IoT
+# Car Leasing with Blockchain
 
-In this pattern, we will be creating a local Hyperledger Fabric network using the IBM Blockchain Platform extension for VSCode which makes it easy to start developing smart contracts. 
+In this lab, we will be creating a local Hyperledger Fabric network by using the IBM Blockchain Platform extension for VSCode which makes it easy to start developing smart contracts. 
 
-The solution that we will be creating is an asset lifecycle and tracking solution that keeps a record of the asset from creation to deletion. Also, we will be creating and managing asset leases which keep track of the lease terms in a lease agreement such as end date, price, and deposit amount. 
+The solution that we will be working with is a car leasing platform where users can put their own personal cars up for lease to other people. For cars that are in demand, users can make offers on listings and bid against other users.
 
-For the IoT integration, we will be leveraging the IBM Watson IoT Platform to handle device scanning at various locations as the asset is being transferred. Instead of having an actual physical device, we will be creating a web app pretending to be a device which will trigger these scans and notify a locally node.js app to invoke the updateAssetLocation transaction.
+Additionally, this network can be expanded to include a number of other companies who wish to transact on the netork. This can include:
+- Rental car companies who wish to have their cars available to lease on the network.
+- Insurance companies who wish to offer temporary insurance policies for drivers 
+- local dealerships who wish to showcase cars that are for sale
 
-After completing this pattern you will understand how to:
+
+After completing this lab you will understand how to:
+- Utilize the IBM Blockchain Platform extension for VSCode
 - Deploy smart contracts to a local Hyperledger Fabric network
-- Create a simulated IoT device using the IBM Watson IoT Platform and Node-Red
 - Connect to a Hyperledger Fabric application using the Fabric SDK for Node.js
-- Publish IoT events to the ledger on a device event such as a scan
 
 # Flow
 1. The smart contract is deployed to a local Hyperledger Fabric network via the IBM Blockchain Platform extension for VS Code.
-2. As the asset is moved from place to place it is scanned via RFID or barcode by an IoT device. In this pattern, the device is simulated.
-3. The IoT device publishes an event notification to the IBM Watson IoT Platform, which then notifies all listening applications that a scan has taken place.
-4. An application listening to the IBM Watson IoT Platform for scanning events then invokes a transfer transaction.
-5. The location of the asset is updated in the ledger automatically.
-
-
-
-## Scenario
-In this demo scenario we have three participants: a manufacturer, a vendor, and a contractor. 
-1. The manufacturer creates the asset and sells it to the vendor. 
-2. The vendor then creates a lease with the contractor which defines terms including how much deposit is to be paid and how much deposit will be returned based on the amount of damage that the asset has received during the lease duration. For example, if the asset is returned with 21% damage then only 60% of the deposit will be returned. 
-3. After the lease duration is over, the asset is returned to the vendor and inspected for damage. The lease is then updated to reflect the amount of damage that the asset received.
-4. The asset is sent back to the manufacturer for repairs. If the vendor has a warranty to cover future repairs with the manufacturer, the manufacturer could take a look at the history of the asset and see if any activity such as imporper usage has voided the warranty.
-5. The asset is then returned to the vendor to be leased out again.
-
-
-## Structure of Asset
-
-The asset being stored in the ledger has the following properties:
-
-- manufacturer - creator of the asset
-- assetNumber - serial number given to the asset
-- assetType - type of asset
-- currentOwner - Who currently posesses the asset
-- currentState - The current state of the asset
-- percentDamage - The amount of damage in percent found during the inspection stage
-- location - Where the asset was scanned last
-
-## Structure of the Asset Lease
-
-The asset lease being stored in the ledger has the following properties:
-
-- leaseNumber - Lease agreement number
-- lessee - Who is receiving the lease
-- lessor - Who is leasing the asset out
-- assetKey - The key of the asset being leased
-- dateLeased - The date the lease goes into effect
-- endOfLease - The end of the lease agreement
-- price - The total price of the lease payments
-- depositPaid - The deposit paid up front
-- dateReturned - The date the asset was returned
-- percentDamaged - The condition of the asset on return displayed in percent damaged
-- depositReturned - Based on the ammount of damage, the amount of the deposit returned
+2. A car is created and added to the network.
+3. Next, a listing is made which makes the car available to be leased.
+4. Other users can rent the car at the advertised price or they can make an offer for a lower price.
+5. The owner of the car decides to either accept the offer and rent the car to the person that made the offer, or to ignore the offer.
+6. Once an offer is accepted and the car is rented, a lease is created that outlines the terms of the rental.
+7. As the renter is driving the car around, the car communicates the current location and current gas level readings to the network and the asset in the ledger is updated.
+8. In order for the car to be returned, the car must have a gas level equal to or greater than it did from the start. The renter refills gas as needed.
+9. Lastly the car is returned and made available for the next renter.
 
 # Prerequisites
 - an IBM Cloud account

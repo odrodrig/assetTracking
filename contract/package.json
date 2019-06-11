@@ -1,6 +1,6 @@
 {
     "name": "car-leasing",
-    "version": "0.0.2",
+    "version": "0.0.1",
     "description": "A smart contract for a car leasing business network",
     "main": "index.js",
     "engines": {
@@ -14,7 +14,7 @@
         "start": "fabric-chaincode-node start"
     },
     "engineStrict": true,
-    "author": "John Doe",
+    "author": "Oliver Rodriguez",
     "license": "Apache-2.0",
     "dependencies": {
         "fabric-contract-api": "1.4.1",

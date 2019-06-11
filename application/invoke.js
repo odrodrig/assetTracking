@@ -168,6 +168,12 @@ async function main() {
 
       case 'queryAll':
 
+          let queryAllResults = await contract.evaluateTransaction('queryAll');
+    
+          let queryAllArray = JSON.parse(queryAllResults.toString());
+
+          console.log(queryAllArray);      
+
         break;
 
       case 'queryByField':

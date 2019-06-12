@@ -25,6 +25,7 @@ const wallet = new FileSystemWallet(homedir+'/.fabric-vscode/local_fabric_wallet
 // Load connection profile; will be used to locate a gateway
 const connectionProfile = JSON.parse(fs.readFileSync('../gateway/connection.json', 'utf8'));
 
+// Parse command line argument
 const args = process.argv.slice(2);
 
 // Main program function
@@ -45,7 +46,7 @@ async function main() {
 
     await gateway.connect(connectionProfile, connectionOptions);
 
-    // Access PaperNet network
+    // Access car-leasing network
     console.log('Use network channel: mychannel.');
 
     const network = await gateway.getNetwork('mychannel');
@@ -149,7 +150,7 @@ async function main() {
       case 'makeOffer':
 
         //Transaction, listingID, renter, price
-        let makeOfferResponse = await contract.submitTransaction('makeOffer', "Li-001","oliver@test.com","18");
+        let makeOfferResponse = await contract.submitTransaction('makeOffer', "Li-001","oliver@test.com","12");
 
         let newOffer = JSON.parse(makeOfferResponse.toString());
 
